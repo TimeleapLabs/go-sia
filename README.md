@@ -8,27 +8,78 @@ Sia - Binary serialisation and deserialisation with built-in compression. You ca
 
 ## Install
 
-`
-go get github.com/pouya-eghbali/go-sia
-`
+`go get github.com/pouya-eghbali/go-sia/v2`
 
 ## Basic Usage
 
 To serialize multiple values, first create a sia object and then you can add values in order. Note that the order of adding values should be considered when you want to read them again.
 
-Serializing:
 ```go
-rawByte := sia.New().
-    AddUInt16(1234).
-    AddString64("think simple, do simple!").
-    Bytes()
+package main
+
+import (
+	"fmt"
+
+	sia "github.com/TimeleapLabs/go-sia/v2/pkg"
+)
+
+type person struct {
+	Name string
+	Age  uint8
+}
+
+func (p *person) Sia() sia.Sia {
+	return sia.New().
+		AddString8(p.Name).
+		AddUInt8(p.Age)
+}
+func (p *person) FromSia(s sia.Sia) {
+	p.Name = s.ReadString8()
+	p.Age = s.ReadUInt8()
+}
+func main() {
+	p := person{Name: "Pouya", Age: 33}
+	payload := p.Sia().Bytes()
+	fmt.Println(payload) // [5 80 111 117 121 97 33]
+	var p2 person
+	p2.FromSia(sia.New().EmbedBytes(payload))
+	fmt.Println(p2) // {Pouya 33}
+}
 ```
 
-Deserializing:
+## Serializers
+
+Sia provides a set of serializers for each primitive type. They are most useful for cases where you're adding an array of values. Instead of writing the function yourself, just use the exported utility functions.
+
 ```go
-deserialized := sia.NewFromBytes(rawByte)
-gotSampleUint16 := deserialized.ReadUInt16() // 1234
-gotSampleString := deserialized.ReadString64() // think simple, do simple!
+import (
+	sializer "github.com/pouya-eghbali/go-sia/v2/pkg"
+)
+
+const sia = sializer.New();
+var words = []string{"Hello", "World"}
+sia.AddArray8(words, sializer.SerializeString8ArrayItem);
 ```
 
-Note that sia can't handle serializing of arrays, so it will fall back to JSON marshal about them.
+The `SerializeString8ArrayItem` runs for each item in the array and adds the item to the Sia content.
+
+## Deserializers
+
+For the opposite scenario, where you want to read an array of values from the Sia content, you can use the `ReadArray8` method in combination with the deserializers.
+
+```go
+import (
+	sializer "github.com/pouya-eghbali/go-sia/v2/pkg"
+)
+
+func main() {
+	sia := sializer.New()
+	var words = []string{"Hello", "World"}
+	sia.AddArray8(words, sializer.DeserializeString8ArrayItem)
+
+	const desia = sializer.New().EmbedBytes(sia.Bytes());
+	const deserialized = desia.ReadArray8(sializer.DeserializeString8ArrayItem);
+
+	fmt.Println(deserialized); // ["Hello", "World"]
+}
+```
