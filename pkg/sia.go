@@ -8,6 +8,7 @@ type Sia interface {
 	Seek(index uint64) Sia
 	Bytes() []byte
 	Offset() uint64
+	GetSia() *sia
 
 	EmbedSia(s2 *sia) Sia
 	EmbedBytes(b []byte) Sia
@@ -61,7 +62,11 @@ type sia struct {
 }
 
 type ArraySia[T any] struct {
-	sia
+	*sia
+}
+
+func (s *sia) GetSia() *sia {
+	return s
 }
 
 func (s *sia) Seek(index uint64) Sia {
@@ -95,4 +100,8 @@ func NewFromBytes(content []byte) Sia {
 	return &sia{
 		Content: content,
 	}
+}
+
+func NewArray[T any](s *Sia) Array[T] {
+	return &ArraySia[T]{(*s).GetSia()}
 }

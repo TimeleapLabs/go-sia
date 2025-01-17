@@ -73,11 +73,13 @@ func (s *ArraySia[T]) ReadArray64(fn func(s *ArraySia[T]) T) []T {
 }
 
 func NewSiaArray[T any]() Array[T] {
-	return &ArraySia[T]{}
+	return &ArraySia[T]{
+		&sia{},
+	}
 }
 
 func NewArrayFromBytes[T any](content []byte) Array[T] {
 	return &ArraySia[T]{
-		sia{Content: content},
+		&sia{Content: content},
 	}
 }
