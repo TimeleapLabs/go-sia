@@ -1,22 +1,21 @@
 # Sia
 
-[![Build Status](https://github.com/logicalangel/go-sia/actions/workflows/test.yml/badge.svg?branch=master)][actions]
+[![Build Status](https://github.com/TimeleapLabs/go-sia/actions/workflows/test.yml/badge.svg?branch=master)][actions]
 
 Sia - Binary serialisation and deserialisation with built-in compression. You can consider Sia a strongly typed, statically typed domain specific binary language for constructing data. Sia preserves data types and supports custom ones.
 
-[actions]: https://github.com/logicalangel/go-sia
+[actions]: https://github.com/TimeleapLabs/go-sia
 
 ## Install
 
-`
-go get github.com/pouya-eghbali/go-sia
-`
+`go get github.com/TimeleapLabs/go-sia/v2`
 
 ## Basic Usage
 
 To serialize multiple values, first create a sia object and then you can add values in order. Note that the order of adding values should be considered when you want to read them again.
 
 Serializing:
+
 ```go
 rawByte := sia.New().
     AddUInt16(1234).
@@ -25,6 +24,7 @@ rawByte := sia.New().
 ```
 
 Deserializing:
+
 ```go
 deserialized := sia.NewFromBytes(rawByte)
 gotSampleUint16 := deserialized.ReadUInt16() // 1234
